@@ -115,3 +115,30 @@ SELECT * from AutoriUudisedAjalehes;
 UPDATE AutoriUudisedAjalehes SET kuupaev='2026-03-18';
 
 
+-- 1. tee view, mis näitab uudised konrketsel kuupäeval
+CREATE VIEW UudisedKuupaevaJargi AS
+SELECT u.uudisPealkiri, a.nimi AS autor, u.kuupaev
+FROM uudised u
+INNER JOIN ajakirjanik a
+ON u.ajakirjanikID = a.ajakirjanikID;
+
+SELECT * FROM UudisedKuupaevaJargi
+WHERE kuupaev = '2026-03-18';
+
+--  oma ajakirjaniku view
+CREATE VIEW ViimasedUudised AS
+SELECT uudisPealkiri, kuupaev
+FROM uudised
+WHERE kuupaev >= '2025-01-01';
+
+SELECT * FROM ViimasedUudised;
+
+--oma ajalehte view
+CREATE VIEW UudisteArvAjalehes AS
+SELECT aj.ajalehtNimetus, COUNT(u.uudisID) AS UudisteArv
+FROM ajaleht aj
+LEFT JOIN uudised u
+ON aj.ajalehtID = u.ajalehtID
+GROUP BY aj.ajalehtNimetus;
+
+SELECT * FROM UudisteArvAjalehes;
