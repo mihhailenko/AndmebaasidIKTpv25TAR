@@ -128,3 +128,77 @@ BEGIN
 END;
 
 EXEC lisaFirma 'Google', 'Tallinn', '5559999';
+
+
+
+CREATE PROCEDURE lisaVeerg
+    @tabel VARCHAR(50),
+    @veerg VARCHAR(50),
+    @tyyp VARCHAR(50)
+AS
+BEGIN
+    DECLARE @sql VARCHAR(200);
+
+    SET @sql = 'ALTER TABLE ' + @tabel + 
+               ' ADD ' + @veerg + ' ' + @tyyp;
+
+    EXEC(@sql);
+END;
+
+select * from firma;
+EXEC lisaVeerg 'firma', 'email', 'VARCHAR(30)';
+select * from firma;
+
+
+CREATE PROCEDURE keskminePalk
+AS
+BEGIN
+    SELECT AVG(palk) AS keskmine_palk
+    FROM praktikajuhendaja;
+END;
+
+EXEC keskminePalk;
+
+create function fnComputeAge(@DOB datetime)
+returns nvarchar(50)
+as begin
+	declare @tempdate datetime, @years int, @months int, @days int
+		select @tempdate = @DOB
+
+		select @years = datediff(year, @tempdate, getdate()) - case when (month(@DOB) > month(GETDATE())) or (MONTH(@DOB)
+		= month (getdate()) and day(@DOB) > DAY(getdate())) then 1 else 0 end
+		select @tempdate = dateadd(year, @years, @tempdate)
+
+		select @months = datediff(month, @tempdate, getdate()) - case when day(@DOB) > day(getdate()) then 1 else 0 end
+		select @tempdate = dateadd(MONTH, @months, @tempdate)
+
+		select @days = datediff(day, @tempdate, getdate())
+
+	declare @Age nvarchar(50)
+		set @Age = cast(@years as nvarchar(4)) + ' Years ' + cast(@months as nvarchar(2)) + 
+		' Months ' + cast(@days as nvarchar(2)) + ' Days old'
+	return @Age
+end
+
+create function dbo.CalculateAge(@DOB date)
+returns int
+as begin
+declare @Age int
+
+set @Age = DATEDIFF(YEAR, @DOB, GETDATE()) -
+	case
+		when (MONTH(@DOB) > MONTH(getdate())) or
+			 (MONTH(@DOB) > MONTH(GETDATE()) and DAY(@DOB) > day(GETDATE()))
+		then 1
+		else 0
+		end
+	return @Age
+end
+
+SELECT eesnimi, perekonnanimi, synniaeg,
+       dbo.fnComputeAge(synniaeg) AS vanus
+FROM praktikajuhendaja;
+
+SELECT eesnimi, perekonnanimi, synniaeg,
+       dbo.CalculateAge(synniaeg) AS vanus
+FROM praktikajuhendaja;
